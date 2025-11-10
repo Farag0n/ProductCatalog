@@ -1,44 +1,135 @@
+using Microsoft.OpenApi.Models;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using ProductCatalog.Application.Interfaces;
+using ProductCatalog.Application.Services;
+using ProductCatalog.Domain.Interfaces;
+using ProductCatalog.Infraestructure.Data;
+using ProductCatalog.Infraestructure.Extensions;
+using ProductCatalog.Infraestructure.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// =======================================================
+// 1. Configuración de la cadena de conexión a MySQL
+// =======================================================
+
+// Obtiene la cadena desde appsettings.json
+
+// Configura EF Core con autodetección de versión MySQL
+
+builder.Services.AddInfrastructure(builder.Configuration);
+// =======================================================
+// 2. Inyección de dependencias
+// =======================================================
+
+// Repositorios
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+
+//Servicios de application
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+
+//Configura el sistema de autenticación para validar tokens JWT en las solicitudes HTTP.
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+            )
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+
+// =======================================================
+// 3. Controladores y Swagger
+// =======================================================
+
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+builder.Services.AddSwaggerGen(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "User,Product Management API",
+        Version = "v1",
+        Description = "API para la gestión de usuarios y productos"
+    });
+});
+
+// ======================
+//  CONFIGURACIÓN DE CORS
+// ======================
+var corsPolicyName = "AllowSpecificOrigins";
+
+builder.Services.AddCors( options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod(); // si el front envía cookies o auth headers
+        });
+});
+
+// =======================================================
+// 4. Construcción y pipeline
+// =======================================================
+
+try
+{
+    var app = builder.Build();
+
+    // Test the connection to the database
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        try
+        {
+            db.Database.OpenConnection();
+            Console.WriteLine("Connection to database successful.");
+            db.Database.CloseConnection();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error of connection: {ex.Message}");
+        }
+    }
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "School Management API v1");
+            c.RoutePrefix = string.Empty;
+        });
+    }
+
+    app.UseHttpsRedirection();
+    app.UseAuthentication();
+    app.UseAuthorization();
+    app.MapControllers();
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
+catch (Exception ex)
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    Console.WriteLine($"❌ Error al iniciar la aplicación: {ex.Message}");
+    Console.WriteLine(ex.StackTrace);
 }

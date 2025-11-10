@@ -22,6 +22,7 @@ public class UserService : IUserService
         _configuration = configuration;
     }
     
+    // MÉTODO PARA MAPEAR USER A DTO
     private UserDto MapUserToDto(User user)
     {
         return new UserDto
@@ -33,10 +34,11 @@ public class UserService : IUserService
             Role = user.Role.ToString() // Convertir enum a string
         };
     }
-
+    
+    // MÉTODO PARA GENERAR EL TOKEN JWT
     private string GenerateJwtToken(User user)
     {
-        // Leer la configuración desde appsettings.json
+        // Leer configuración JWT desde appsettings.json
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"] 
                                                                   ?? throw new InvalidOperationException("Configuración JWT 'Key' no encontrada")));
@@ -46,6 +48,7 @@ public class UserService : IUserService
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        // Crear claims (información que irá dentro del token)
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -54,6 +57,7 @@ public class UserService : IUserService
             new Claim(ClaimTypes.Role, user.Role.ToString()) // Rol
         };
 
+        // Crear token JWT
         var token = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
@@ -64,24 +68,25 @@ public class UserService : IUserService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
+    
+    // REGISTRO DE USUARIO
     public async Task<AuthReponseDto> RegisterAsync(UserDto registerDto)
     {
-        //validar si el Email existe
+        // Validar si el Email ya existe
         var users = await _userRepository.GetAllUser();
         var existingUser = users.FirstOrDefault(u => u.Email == registerDto.Email);
         if (existingUser != null)
         {
-            Console.WriteLine("El email ya está registrado");
+            throw new InvalidOperationException("El email ya está registrado");
         }
-        
-        //Parsear el rol de string a el enum
+
+        // Parsear el rol de string a enum (si falla, asignar User por defecto)
         if (!Enum.TryParse<UserRole>(registerDto.Role, true, out var userRole))
         {
-            userRole = UserRole.User;//Rol por defecto si es invalido
+            userRole = UserRole.User;
         }
-        
-        //Hashear la contraseña
+
+        // Hashear la contraseña antes de guardar
         string passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.PasswordHash);
 
         var user = new User
@@ -95,52 +100,61 @@ public class UserService : IUserService
         };
 
         var newUser = await _userRepository.AddUser(user);
-        
-        //crear un dto de login
-        var loginDto = new UserLoginDto { Email = registerDto.UserName, Pasword = registerDto.PasswordHash };
+
+        // Crear DTO de login para devolver el token inmediatamente después de registrar
+        var loginDto = new UserLoginDto 
+        { 
+            Email = registerDto.Email, 
+            Pasword = registerDto.PasswordHash 
+        };
+
         return await LoginAsync(loginDto);
     }
-
+    
+    // LOGIN DE USUARIO
     public async Task<AuthReponseDto> LoginAsync(UserLoginDto loginDto)
     {
-        //validar el email y la contraseña
+        // Validar email y contraseña
         var users = await _userRepository.GetAllUser();
         var user = users.FirstOrDefault(u => u.Email == loginDto.Email);
+
         if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Pasword, user.PasswordHash))
         {
-            Console.WriteLine("Credenciales inválidas");
+            throw new UnauthorizedAccessException("Credenciales inválidas");
         }
-        
-        //Generar token JWT
+
+        // Generar token JWT
         var token = GenerateJwtToken(user);
         var userDto = MapUserToDto(user);
 
         return new AuthReponseDto { Token = token, User = userDto };
     }
-
+    
+    // OBTENER TODOS LOS USUARIOS
     public async Task<IEnumerable<UserDto>> GetAllAsync()
     {
         var users = await _userRepository.GetAllUser();
         return users.Select(MapUserToDto).ToList();
     }
-
-
+    
+    // OBTENER USUARIO POR ID
     public async Task<UserDto> GetByIdAsync(int id)
     {
         var user = await _userRepository.GetUserById(id);
         if (user == null)
         {
-            Console.WriteLine("Usuario no encontrado");
+            throw new KeyNotFoundException("Usuario no encontrado");
         }
         return MapUserToDto(user);
     }
-
+    
+    // ACTUALIZAR USUARIO
     public async Task UpdateAsync(int id, UserDto userDto)
     {
         var user = await _userRepository.GetUserById(id);
         if (user == null)
         {
-            Console.WriteLine("Usuario no encontrado");
+            throw new KeyNotFoundException("Usuario no encontrado");
         }
 
         user.UserName = userDto.UserName;
@@ -153,13 +167,14 @@ public class UserService : IUserService
 
         await _userRepository.UpdateUser(user);
     }
-
+    
+    // ELIMINAR USUARIO
     public async Task DeleteAsync(int id)
     {
         var deletedUser = await _userRepository.DeleteUser(id);
         if (deletedUser == null)
         {
-            Console.WriteLine("Usuario no encontrado para eliminar");
+            throw new KeyNotFoundException("Usuario no encontrado para eliminar");
         }
     }
 }
