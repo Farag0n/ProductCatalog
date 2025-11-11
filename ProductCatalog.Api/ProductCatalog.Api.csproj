@@ -25,12 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ProductCatalog.Application\ProductCatalog.Application.csproj" />
     <ProjectReference Include="..\ProductCatalog.Infraestructure\ProductCatalog.Infraestructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\.dockerignore">
-      <Link>.dockerignore</Link>
-    </Content>
+    <ProjectReference Include="..\ProductCatalog.Tests\ProductCatalog.Tests.csproj" />
   </ItemGroup>
 
 </Project>

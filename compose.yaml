@@ -1,7 +1,0 @@
-﻿services:
-  productcatalog.api:
-    image: productcatalog.api
-    build:
-      context: .
-      dockerfile: ProductCatalog.Api/Dockerfile
-
