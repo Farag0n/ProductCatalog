@@ -9,7 +9,7 @@ public class UserConfigurations : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        //Se le especifica a la db que la tabla tiene una llave y es u.Id
+        //Se le especifica a la db que la tabla tiene una llave y es u. Id
         builder.HasKey(u => u.Id);
 
         builder.Property(u => u.Name)
