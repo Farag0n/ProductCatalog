@@ -27,6 +27,13 @@ public class ProductConfigurations : IEntityTypeConfiguration<Product>
             .IsRequired();
         
         //Crear producto de prueba basico:
-        
+        builder.HasData(new Product
+        {
+            Id = 1,
+            Name = "Shui",
+            Description = "Katana que utilizo el samurai Riuma y es tesoro nacional de Wano",
+            Price = 10500,
+            Quantity = 1
+        });
     }
 }
