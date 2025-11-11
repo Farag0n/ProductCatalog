@@ -130,6 +130,12 @@ public class UserService : IUserService
         return new AuthReponseDto { Token = token, User = userDto };
     }
     
+    // LOGOUT DE USUARIO
+    public Task<AuthReponseDto> LogoutAsync()
+    {
+        throw new NotImplementedException();
+    }
+
     // OBTENER TODOS LOS USUARIOS
     public async Task<IEnumerable<UserDto>> GetAllAsync()
     {

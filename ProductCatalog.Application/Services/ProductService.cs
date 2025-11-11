@@ -18,7 +18,6 @@ public class ProductService : IProductService
     {
         return new ProductDto
         {
-            Id = product.Id,
             Name = product.Name,
             Description = product.Description,
             Quantity = product.Quantity,

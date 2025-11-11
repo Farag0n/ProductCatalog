@@ -51,11 +51,11 @@ public class ProductController : ControllerBase
     //Crear un nuevo producto
     [HttpPost]
     [Authorize(Roles = "User,Admin")]
-    public async Task<IActionResult> Add([FromBody] ProductDto createDto)
+    public async Task<IActionResult> Add([FromBody] ProductDto showDto)
     {
         try
         {
-            var newProduct = await _productService.CreateAsync(createDto);
+            var newProduct = await _productService.CreateAsync(showDto);
             return CreatedAtAction(nameof(GetById), new { id = newProduct.Id }, newProduct);
         }
         catch (Exception ex)
