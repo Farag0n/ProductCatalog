@@ -8,7 +8,6 @@ namespace ProductCatalog.Application.Services;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _repository;
-
     public ProductService(IProductRepository productRepository)
     {
         _repository = productRepository;
@@ -27,6 +26,7 @@ public class ProductService : IProductService
         };
     }
 
+    //CREAR PRODUCTO
     public async Task<ProductDto> CreateAsync(ProductDto createDto)
     {
         try

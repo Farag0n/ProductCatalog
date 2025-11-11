@@ -10,7 +10,7 @@ public class User
     [Column(TypeName = "varchar(100)")] public string Name { get; set; }
     [Column(TypeName = ("varchar(100)"))] public string LastName { get; set; }
     [Column(TypeName = ("varchar(50)"))] public string Email { get; set; }
-    [Column(TypeName = ("varchar(20)"))] public string UserName { get; set; }
-    [Column(TypeName = ("varchar(25)"))] public string PasswordHash { get; set; }
+    [Column(TypeName = ("varchar(50)"))] public string UserName { get; set; }
+    [Column(TypeName = ("varchar(200)"))] public string PasswordHash { get; set; }
     public UserRole Role { get; set; } = UserRole.User;
 }

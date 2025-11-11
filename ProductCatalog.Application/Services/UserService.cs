@@ -62,7 +62,7 @@ public class UserService : IUserService
             issuer: issuer,
             audience: audience,
             claims: claims,
-            expires: DateTime.Now.AddHours(8), // Duración del token
+            expires: DateTime.UtcNow.AddMinutes(30), // Duración del token
             signingCredentials: creds
         );
 
