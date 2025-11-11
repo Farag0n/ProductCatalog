@@ -17,10 +17,10 @@ var builder = WebApplication.CreateBuilder(args);
 // =======================================================
 
 // Obtiene la cadena desde appsettings.json
-
 // Configura EF Core con autodetección de versión MySQL
-
 builder.Services.AddInfrastructure(builder.Configuration);
+
+
 // =======================================================
 // 2. Inyección de dependencias
 // =======================================================
@@ -115,7 +115,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "School Management API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Product Catalog & User management API v1");
         c.RoutePrefix = string.Empty;
     });
 }
