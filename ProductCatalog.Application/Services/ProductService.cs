@@ -19,6 +19,7 @@ public class ProductService : IProductService
     {
         return new ProductDto
         {
+            Id = product.Id,
             Name = product.Name,
             Description = product.Description,
             Quantity = product.Quantity,
@@ -94,7 +95,10 @@ public class ProductService : IProductService
 
                 await _repository.UpdateProduct(product);
             }
-            Console.WriteLine($"El producto que se intenta actualizar es nulo");
+            else
+            {
+                Console.WriteLine($"El producto que se intenta actualizar es nulo");
+            }
         }
         catch (Exception e)
         {

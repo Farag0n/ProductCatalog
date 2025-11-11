@@ -56,7 +56,7 @@ public class ProductController : ControllerBase
         try
         {
             var newProduct = await _productService.CreateAsync(createDto);
-            return CreatedAtAction(nameof(GetById), new { id = newProduct.Name }, newProduct);
+            return CreatedAtAction(nameof(GetById), new { id = newProduct.Id }, newProduct);
         }
         catch (Exception ex)
         {

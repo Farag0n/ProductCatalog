@@ -8,7 +8,7 @@ public class User
 {
     [Key] public int Id { get; set; }
     [Column(TypeName = "varchar(100)")] public string Name { get; set; }
-    [Column(TypeName = ("varchar(100)"))] public string LasName { get; set; }
+    [Column(TypeName = ("varchar(100)"))] public string LastName { get; set; }
     [Column(TypeName = ("varchar(50)"))] public string Email { get; set; }
     [Column(TypeName = ("varchar(20)"))] public string UserName { get; set; }
     [Column(TypeName = ("varchar(25)"))] public string PasswordHash { get; set; }

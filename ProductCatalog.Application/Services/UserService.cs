@@ -28,7 +28,7 @@ public class UserService : IUserService
         return new UserDto
         {
             Name = user.Name,
-            LasName = user.LasName,
+            LastName = user.LastName,
             UserName = user.UserName,
             Email = user.Email,
             Role = user.Role.ToString() // Convertir enum a string
@@ -87,12 +87,12 @@ public class UserService : IUserService
         }
 
         // Hashear la contraseña antes de guardar
-        string passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.PasswordHash);
+        string passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
 
         var user = new User
         {
             Name = registerDto.Name,
-            LasName = registerDto.LasName,
+            LastName = registerDto.LastName,
             Email = registerDto.Email,
             UserName = registerDto.UserName,
             Role = userRole,
@@ -105,7 +105,7 @@ public class UserService : IUserService
         var loginDto = new UserLoginDto 
         { 
             Email = registerDto.Email, 
-            Pasword = registerDto.PasswordHash 
+            Password = registerDto.Password 
         };
 
         return await LoginAsync(loginDto);
@@ -118,7 +118,7 @@ public class UserService : IUserService
         var users = await _userRepository.GetAllUser();
         var user = users.FirstOrDefault(u => u.Email == loginDto.Email);
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Pasword, user.PasswordHash))
+        if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Credenciales inválidas");
         }
@@ -157,14 +157,13 @@ public class UserService : IUserService
             throw new KeyNotFoundException("Usuario no encontrado");
         }
 
+        // Actualizar solo campos permitidos
+        user.Name = userDto.Name;
+        user.LastName = userDto.LastName;
         user.UserName = userDto.UserName;
         user.Email = userDto.Email;
-            
-        if (Enum.TryParse<UserRole>(userDto.Role, true, out var userRole))
-        {
-            user.Role = userRole;
-        }
 
+        // No se actualiza ni el rol ni la contraseña
         await _userRepository.UpdateUser(user);
     }
     

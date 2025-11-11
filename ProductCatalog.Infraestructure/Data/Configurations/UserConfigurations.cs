@@ -37,7 +37,7 @@ public class UserConfigurations : IEntityTypeConfiguration<User>
         {
             Id = 1,
             Name = "Zoro",
-            LasName = "Rorronoa",
+            LastName = "Rorronoa",
             Email = "rorronoa.zoro@muguiwara.com",
             UserName = "Espadachin",
             PasswordHash = "3-Espadas",
