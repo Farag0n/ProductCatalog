@@ -92,54 +92,46 @@ builder.Services.AddCors( options =>
 // 4. Construcción y pipeline
 // =======================================================
 
-try
+var app = builder.Build();
+
+// Test the connection to the database
+using (var scope = app.Services.CreateScope())
 {
-    var app = builder.Build();
-
-    // Test the connection to the database
-    using (var scope = app.Services.CreateScope())
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
     {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        try
-        {
-            db.Database.OpenConnection();
-            Console.WriteLine("Connection to database successful.");
-            db.Database.CloseConnection();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error of connection: {ex.Message}");
-        }
+        db.Database.OpenConnection();
+        Console.WriteLine("Connection to database successful.");
+        db.Database.CloseConnection();
     }
-
-    if (app.Environment.IsDevelopment())
+    catch (Exception ex)
     {
-        app.UseSwagger();
-        app.UseSwaggerUI(c =>
-        {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "School Management API v1");
-            c.RoutePrefix = string.Empty;
-        });
+        Console.WriteLine($"Error of connection: {ex.Message}");
     }
-    
-    if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local")
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI(c =>
-        {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Product Catalog API v1");
-            c.RoutePrefix = string.Empty;
-        });
-    }
-
-    app.UseHttpsRedirection();
-    app.UseAuthentication();
-    app.UseAuthorization();
-    app.MapControllers();
-    app.Run();
 }
-catch (Exception ex)
+
+if (app.Environment.IsDevelopment())
 {
-    Console.WriteLine($"❌ Error al iniciar la aplicación: {ex.Message}");
-    Console.WriteLine(ex.StackTrace);
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "School Management API v1");
+        c.RoutePrefix = string.Empty;
+    });
 }
+
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local")
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Product Catalog API v1");
+        c.RoutePrefix = string.Empty;
+    });
+}
+
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+app.Run();
