@@ -33,6 +33,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 //Servicios de application
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 //Configura el sistema de autenticación para validar tokens JWT en las solicitudes HTTP.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
