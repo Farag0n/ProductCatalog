@@ -18,28 +18,6 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    //Registro de usuario
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] UserDto registerDto)
-    {
-        if (registerDto == null)
-            return BadRequest("Datos de registro inválidos.");
-
-        var result = await _userService.RegisterAsync(registerDto);
-        return Ok(result);
-    }
-
-    //Login de usuario
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
-    {
-        if (loginDto == null)
-            return BadRequest("Datos de inicio de sesión inválidos.");
-
-        var result = await _userService.LoginAsync(loginDto);
-        return Ok(result);
-    }
-
     //Refresh token
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
